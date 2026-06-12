@@ -34,6 +34,7 @@ This project uses [`zotero-plugin-scaffold`](https://github.com/zotero-plugin-de
 - `npm test` runs the pure DOI helper tests.
 - `npm run build` builds `.scaffold/build/addon`, `.scaffold/build/zotero-doi-manager-<version>.xpi`, and update manifests.
 - `npm start` starts scaffold's Zotero development server. Create a local `.env` with `ZOTERO_PLUGIN_ZOTERO_BIN_PATH` and, optionally, `ZOTERO_PLUGIN_PROFILE_PATH`.
+- `npm run release` bumps, commits, tags, and pushes a new version locally; the GitHub Actions release workflow publishes the tagged XPI and update manifests.
 
 ### Authors
 
