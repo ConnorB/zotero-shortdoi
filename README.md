@@ -2,24 +2,44 @@
 
 This is an add-on for Zotero, a research source management tool. The add-on can auto-fetch DOI names for journal articles using the CrossRef API, as well as look up shortDOI names using http://shortdoi.org. The add-on additionally verifies that stored DOIs are valid and marks invalid DOIs.
 
-Please report any bugs, questions, or feature requests on the Zotero forums.
+This fork is maintained by Connor Brown. It is based on the original `bwiernik/zotero-shortdoi` project by Brenton M. Wiernik.
+
+Please report any bugs, questions, or feature requests on the GitHub issue tracker.
 
 Code for this extension is based in part [Zotero Google Scholar Citations](https://github.com/beloglazov/zotero-scholar-citations) by Anton Beloglazov.
 
+### Compatibility
+
+Requires Zotero 8 or Zotero 9.
+
 ### Plugin Functions
 
-  - Get shortDOIs: For the selected items, look up shortDOIs (replacing stored DOIs, if any) and mark invalid DOIs.
-  - Get long DOIs: For the selected items, look up full DOIs (replacing stored DOIs, if any) and mark invalid DOIs.
-  - Verify and clean DOIs: For the selected items, look up full DOIs (replacing stored DOIs, if any), verify that stored DOIs are valid, and mark invalid DOIs.
-    - This function also removes unnecessary prefixes (such as `doi:`, `https://doi.org/`, or a publisher URL prefix) from the DOI field.
+- Get shortDOIs: For the selected items, look up shortDOIs (replacing stored DOIs, if any) and mark invalid DOIs.
+- Get long DOIs: For the selected items, look up full DOIs (replacing stored DOIs, if any) and mark invalid DOIs.
+- Verify and clean DOIs: For the selected items, look up full DOIs (replacing stored DOIs, if any), verify that stored DOIs are valid, and mark invalid DOIs.
+  - This function also removes unnecessary prefixes (such as `doi:`, `https://doi.org/`, or a publisher URL prefix) from the DOI field.
 
 ### How to Install
 
-  - Download the `.xpi` file for the [latest release](https://github.com/bwiernik/zotero-shortdoi/releases/latest).
-    - If you are using Firefox, be sure to right-click on the file link and choose Save Link As…
-  - In Zotero, open the Tools → Add-Ons… menu
-  - Drag the downloaded `.xpi` file to the Add-Ons popup window.
-    - Alternatively, click on the Gear ⚙ button in Add-Ons popup window, choose Install Add-On from File…, and select the downloaded `.xpi` file.
+- Download the `.xpi` file for the [latest release](https://github.com/ConnorB/zotero-shortdoi/releases/latest).
+  - If you are using Firefox, be sure to right-click on the file link and choose Save Link As…
+- In Zotero, open the Tools → Add-Ons… menu
+- Drag the downloaded `.xpi` file to the Add-Ons popup window.
+  - Alternatively, click on the Gear ⚙ button in Add-Ons popup window, choose Install Add-On from File…, and select the downloaded `.xpi` file.
+
+### Development
+
+This project uses [`zotero-plugin-scaffold`](https://github.com/zotero-plugin-dev/zotero-plugin-scaffold).
+
+- `npm test` runs the pure DOI helper tests.
+- `npm run build` builds `.scaffold/build/addon`, `.scaffold/build/zotero-doi-manager-<version>.xpi`, and update manifests.
+- `npm start` starts scaffold's Zotero development server. Create a local `.env` with `ZOTERO_PLUGIN_ZOTERO_BIN_PATH` and, optionally, `ZOTERO_PLUGIN_PROFILE_PATH`.
+
+### Authors
+
+- Connor Brown (maintainer)
+- Brenton M. Wiernik (original author)
+- Julius Bairaktaris
 
 ### License
 

@@ -1,0 +1,19 @@
+{
+  "manifest_version": 2,
+  "name": "DOI Manager",
+  "description": "Plugin for fetching and validating DOI and shortDOI names",
+  "homepage_url": "https://github.com/ConnorB/zotero-shortdoi",
+  "author": "Connor Brown, Brenton M. Wiernik, Julius Bairaktaris",
+  "icons": {
+    "48": "skin/icon.png",
+    "96": "skin/icon@2x.png"
+  },
+  "applications": {
+    "zotero": {
+      "id": "zoteroshortdoi@wiernik.org",
+      "update_url": "https://github.com/ConnorB/zotero-shortdoi/releases/download/release/update.json",
+      "strict_min_version": "8.0",
+      "strict_max_version": "9.0.*"
+    }
+  }
+}

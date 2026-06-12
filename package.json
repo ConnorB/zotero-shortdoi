@@ -1,0 +1,37 @@
+{
+  "name": "zotero-doi-manager",
+  "version": "1.6.0",
+  "description": "Zotero plugin for fetching and validating DOI and shortDOI names.",
+  "private": true,
+  "homepage": "https://github.com/ConnorB/zotero-shortdoi#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ConnorB/zotero-shortdoi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ConnorB/zotero-shortdoi/issues"
+  },
+  "config": {
+    "addonName": "DOI Manager",
+    "addonID": "zoteroshortdoi@wiernik.org",
+    "addonRef": "zoteroshortdoi",
+    "addonInstance": "ShortDOI",
+    "prefsPrefix": "extensions.shortdoi"
+  },
+  "author": "Connor Brown",
+  "contributors": [
+    "Brenton M. Wiernik (original author)",
+    "Julius Bairaktaris"
+  ],
+  "type": "module",
+  "scripts": {
+    "start": "zotero-plugin serve",
+    "build": "zotero-plugin build",
+    "xpi": "npm run build",
+    "release": "zotero-plugin release",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "devDependencies": {
+    "zotero-plugin-scaffold": "^0.8.6"
+  }
+}

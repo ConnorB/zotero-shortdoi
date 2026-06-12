@@ -1,3 +1,7 @@
 .project
+.env
+.scaffold/
 *.xpi
 *.zip
+node_modules/
+dist/
