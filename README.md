@@ -2,7 +2,7 @@
 
 This is an add-on for Zotero, a research source management tool. The add-on can auto-fetch DOI names for journal articles using the CrossRef API, as well as look up shortDOI names using http://shortdoi.org. The add-on additionally verifies that stored DOIs are valid and marks invalid DOIs.
 
-This fork is maintained by Connor Brown. It is based on the original `bwiernik/zotero-shortdoi` project by Brenton M. Wiernik.
+This is a fork based on the original [bwiernik/zotero-shortdoi](https://github.com/bwiernik/zotero-shortdoi) project by Brenton M. Wiernik.
 
 Please report any bugs, questions, or feature requests on the GitHub issue tracker.
 
