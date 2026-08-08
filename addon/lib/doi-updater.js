@@ -27,6 +27,10 @@ const COMPLETION_MESSAGES = Object.freeze({
   check: (n) => `DOIs verified for ${n} items.`,
 });
 
+// A small pool is considerably faster than a serial batch without flooding
+// doi.org, shortdoi.org, or Crossref (or making progress UI noisy).
+const MAX_CONCURRENT_REQUESTS = 3;
+
 const ERROR_MESSAGES = Object.freeze({
   invalid: {
     headline: "Invalid DOI",
@@ -64,9 +68,14 @@ function readPrefs() {
 }
 
 function removeAllDoiTags(item, prefs) {
-  item.removeTag(prefs.tagInvalid);
-  item.removeTag(prefs.tagMultiple);
-  item.removeTag(prefs.tagNodoi);
+  let changed = false;
+  for (const tag of [prefs.tagInvalid, prefs.tagMultiple, prefs.tagNodoi]) {
+    if (tag && item.hasTag(tag)) {
+      item.removeTag(tag);
+      changed = true;
+    }
+  }
+  return changed;
 }
 
 function hasAnyDoiTag(item, prefs) {
@@ -184,8 +193,18 @@ function showErrorWindows(counts, prefs) {
  */
 async function markInvalid(item, prefs) {
   if (!item.isRegularItem()) return;
-  if (prefs.tagInvalid) item.addTag(prefs.tagInvalid, 1);
-  await item.saveTx();
+  let changed = false;
+  for (const tag of [prefs.tagMultiple, prefs.tagNodoi]) {
+    if (tag && item.hasTag(tag)) {
+      item.removeTag(tag);
+      changed = true;
+    }
+  }
+  if (prefs.tagInvalid && !item.hasTag(prefs.tagInvalid)) {
+    item.addTag(prefs.tagInvalid, 1);
+    changed = true;
+  }
+  if (changed) await item.saveTx();
 }
 
 /**
@@ -238,9 +257,9 @@ async function applyDoiResponse(response, item, existingDoi, operation, prefs) {
         await markInvalid(item, prefs);
         return "invalid";
       }
-      item.setField("DOI", shortDoi);
-      removeAllDoiTags(item, prefs);
-      await item.saveTx();
+      const changed = shortDoi !== existingDoi;
+      if (changed) item.setField("DOI", shortDoi);
+      if (removeAllDoiTags(item, prefs) || changed) await item.saveTx();
       return "updated";
     }
 
@@ -253,9 +272,9 @@ async function applyDoiResponse(response, item, existingDoi, operation, prefs) {
         await markInvalid(item, prefs);
         return "invalid";
       }
-      item.setField("DOI", parsed.doi);
-      removeAllDoiTags(item, prefs);
-      await item.saveTx();
+      const changed = parsed.doi !== existingDoi;
+      if (changed) item.setField("DOI", parsed.doi);
+      if (removeAllDoiTags(item, prefs) || changed) await item.saveTx();
       return "updated";
     }
 
@@ -311,9 +330,12 @@ async function processCrossrefLookup(item, operation, prefs) {
     }
 
     case "unresolved": {
-      removeAllDoiTags(item, prefs);
-      if (prefs.tagNodoi) item.addTag(prefs.tagNodoi, 1);
-      await item.saveTx();
+      let changed = removeAllDoiTags(item, prefs);
+      if (prefs.tagNodoi && !item.hasTag(prefs.tagNodoi)) {
+        item.addTag(prefs.tagNodoi, 1);
+        changed = true;
+      }
+      if (changed) await item.saveTx();
       return "nodoi";
     }
 
@@ -325,10 +347,18 @@ async function processCrossrefLookup(item, operation, prefs) {
         contentType: "text/html",
         title: "Multiple DOIs found",
       });
-      item.removeTag(prefs.tagInvalid);
-      item.removeTag(prefs.tagNodoi);
-      if (prefs.tagMultiple) item.addTag(prefs.tagMultiple, 1);
-      await item.saveTx();
+      let changed = false;
+      for (const tag of [prefs.tagInvalid, prefs.tagNodoi]) {
+        if (tag && item.hasTag(tag)) {
+          item.removeTag(tag);
+          changed = true;
+        }
+      }
+      if (prefs.tagMultiple && !item.hasTag(prefs.tagMultiple)) {
+        item.addTag(prefs.tagMultiple, 1);
+        changed = true;
+      }
+      if (changed) await item.saveTx();
       return "multiple";
     }
 
@@ -360,11 +390,28 @@ async function updateItems(items, operation, rootURI) {
   const progressWindow = openProgressWindow(operation, rootURI);
 
   try {
-    for (let i = 0; i < supported.length; i++) {
-      updateProgress(progressWindow, i + 1, supported.length);
-      const outcome = await processItem(supported[i], operation, prefs);
-      counts[outcome] = (counts[outcome] ?? 0) + 1;
-    }
+    let nextIndex = 0;
+    let completed = 0;
+    const worker = async () => {
+      while (nextIndex < supported.length) {
+        const item = supported[nextIndex++];
+        let outcome = "skipped";
+        try {
+          outcome = await processItem(item, operation, prefs);
+        } catch (error) {
+          Zotero.debug(`DOI Manager: unexpected error processing item ${item.id}: ${error}`);
+        }
+        counts[outcome] = (counts[outcome] ?? 0) + 1;
+        completed += 1;
+        updateProgress(progressWindow, completed, supported.length);
+      }
+    };
+    await Promise.all(
+      Array.from(
+        { length: Math.min(MAX_CONCURRENT_REQUESTS, supported.length) },
+        worker
+      )
+    );
     showCompletion(progressWindow, operation, { counts }, prefs);
   } catch (error) {
     Zotero.debug(`DOI Manager: unexpected error in update loop: ${error}`);

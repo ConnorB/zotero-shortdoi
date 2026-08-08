@@ -11,7 +11,9 @@ const API_URLS = Object.freeze({
   CROSSREF: "https://www.crossref.org/openurl?pid=zoteroDOI@wiernik.org&",
 });
 
-const SHORT_DOI_PATTERN = /10\/[^\s]*[^\s.,]/;
+// ShortDOIs have the deliberately compact `10/xxxx` form. Anchor the
+// expression so a DOI fragment embedded in arbitrary text is not accepted.
+const SHORT_DOI_PATTERN = /^10\/[^\s.,]+$/;
 
 const SUPPORTED_ITEM_TYPES = Object.freeze([
   "journalArticle",
@@ -90,8 +92,8 @@ function buildCrossrefLinkUrl(contextObject) {
  * @returns {string|null}
  */
 function parseShortDoiResponse(response) {
-  const value = (response.ShortDOI || response.handle || "").toLowerCase();
-  return value || null;
+  const value = response?.ShortDOI ?? response?.handle;
+  return typeof value === "string" && value ? value.toLowerCase() : null;
 }
 
 /**
@@ -102,14 +104,16 @@ function parseShortDoiResponse(response) {
  * @returns {{ok: true, doi: string} | {ok: false, reason: "invalid" | "missing"}}
  */
 function parseLongDoiResponse(response, fromShortDoi) {
-  if (response.responseCode !== 1) {
+  if (response?.responseCode !== 1) {
     return { ok: false, reason: "invalid" };
   }
 
   const longDoi =
-    fromShortDoi && response.values?.["1"]?.data?.value
+    fromShortDoi && typeof response.values?.["1"]?.data?.value === "string"
       ? response.values["1"].data.value.toLowerCase()
-      : (response.handle || "").toLowerCase();
+      : typeof response.handle === "string"
+        ? response.handle.toLowerCase()
+        : "";
 
   return longDoi
     ? { ok: true, doi: longDoi }
@@ -124,8 +128,10 @@ function parseLongDoiResponse(response, fromShortDoi) {
  * @returns {{kind: "invalid"} | {kind: "unchanged"} | {kind: "updated", doi: string}}
  */
 function parseCheckDoiResponse(response, existingDoi) {
-  if (response.responseCode === 200) return { kind: "invalid" };
-  if (!response.handle) return { kind: "invalid" };
+  if (response?.responseCode === 200) return { kind: "invalid" };
+  if (typeof response?.handle !== "string" || !response.handle) {
+    return { kind: "invalid" };
+  }
   if (response.handle === existingDoi) return { kind: "unchanged" };
   return { kind: "updated", doi: response.handle.toLowerCase() };
 }
@@ -137,6 +143,10 @@ function parseCheckDoiResponse(response, existingDoi) {
  * @returns {{status: "resolved", doi: string} | {status: "unresolved" | "multiresolved" | "unknown"}}
  */
 function parseCrossrefResponse(responseXml) {
+  if (typeof responseXml?.getElementsByTagName !== "function") {
+    return { status: "unknown" };
+  }
+
   const query = responseXml.getElementsByTagName("query")[0];
   if (!query) return { status: "unknown" };
 

@@ -31,6 +31,8 @@ test("isShortDoi recognises the 10/xxxx form", () => {
   assert.equal(isShortDoi("10.1000/xyz"), false);
   assert.equal(isShortDoi(""), false);
   assert.equal(isShortDoi(null), false);
+  assert.equal(isShortDoi("prefix 10/abcd"), false);
+  assert.equal(isShortDoi("10/abcd."), false);
 });
 
 test("buildDoiLookupUrl returns null for empty input", () => {
@@ -78,11 +80,17 @@ test("parseShortDoiResponse prefers ShortDOI then handle then null", () => {
   assert.equal(parseShortDoiResponse({ ShortDOI: "10/AbC" }), "10/abc");
   assert.equal(parseShortDoiResponse({ handle: "10/DeF" }), "10/def");
   assert.equal(parseShortDoiResponse({}), null);
+  assert.equal(parseShortDoiResponse(null), null);
+  assert.equal(parseShortDoiResponse({ ShortDOI: 42 }), null);
 });
 
 test("parseLongDoiResponse rejects responseCode != 1", () => {
   const { parseLongDoiResponse } = loadDoiService();
   assert.deepEqual(parseLongDoiResponse({ responseCode: 100 }, false), {
+    ok: false,
+    reason: "invalid",
+  });
+  assert.deepEqual(parseLongDoiResponse(null, false), {
     ok: false,
     reason: "invalid",
   });
@@ -130,6 +138,7 @@ test("parseCheckDoiResponse treats missing handle as invalid", () => {
   assert.deepEqual(parseCheckDoiResponse({ responseCode: 1 }, "10.1/x"), {
     kind: "invalid",
   });
+  assert.deepEqual(parseCheckDoiResponse(null, "10.1/x"), { kind: "invalid" });
 });
 
 test("parseCrossrefResponse handles resolved/unresolved/multiresolved/unknown", () => {
@@ -161,6 +170,7 @@ test("parseCrossrefResponse handles resolved/unresolved/multiresolved/unknown", 
     parseCrossrefResponse({ getElementsByTagName: () => [] }),
     { status: "unknown" }
   );
+  assert.deepEqual(parseCrossrefResponse(null), { status: "unknown" });
 });
 
 test("buildCrossrefUrl includes multihit", () => {
