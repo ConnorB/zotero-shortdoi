@@ -38,6 +38,10 @@ zoteroshortdoi-autoretrieve-check =
 zoteroshortdoi-autoretrieve-no =
     .label = Nein
 
+zoteroshortdoi-concurrency = Maximale gleichzeitige DOI-Abfragen
+
+zoteroshortdoi-concurrency-desc = Das Add-on startet mit drei gleichzeitigen Abfragen und erhöht die Anzahl bei störungsfreien Diensten schrittweise bis zu diesem Limit. Nach einer Ratenbegrenzung wird sie reduziert.
+
 zoteroshortdoi-notfound-tag = Tags für nicht-gefundene DOIs
 
 zoteroshortdoi-notfound-tag-desc = Diese Tags werden den Einträgen hinzugefügt, um auf die Gründe für das Fehlen eindeutiger DOIs hinzuweisen

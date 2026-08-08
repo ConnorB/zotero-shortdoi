@@ -38,6 +38,10 @@ zoteroshortdoi-autoretrieve-check =
 zoteroshortdoi-autoretrieve-no =
     .label = No
 
+zoteroshortdoi-concurrency = Maximum concurrent DOI lookups
+
+zoteroshortdoi-concurrency-desc = The add-on starts with three simultaneous lookups and gradually increases up to this limit when services are healthy. It reduces concurrency after rate limits.
+
 zoteroshortdoi-notfound-tag = DOI Not Found Tags
 
 zoteroshortdoi-notfound-tag-desc = Tags added to items to indicate reasons why unique DOIs are not found
